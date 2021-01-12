@@ -1,0 +1,92 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package me.Coralise;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+
+/**
+ *
+ * @author Coralise
+ */
+public class offlineCI extends JavaPlugin implements Listener{
+    
+    @Override
+    public void onEnable(){
+    
+        System.out.println("[Offline CI] Enabled!");
+        getServer().getPluginManager().registerEvents(this, this);
+    
+    }
+    
+    @Override
+    public void onDisable(){
+    
+    
+    
+    }
+    
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
+        
+        if(cmd.getName().equalsIgnoreCase("oci")){
+            
+            Player player = (Player)sender;
+            Player plTarget = player.getServer().getPlayer(args[0]);
+            
+            if(plTarget == null){
+            
+                if(!(args == null)){
+                
+                    String target = args[0];
+                
+                    ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
+                    String command = "lp user "+target+" permission set offlineci.marked";
+                    Bukkit.dispatchCommand(console, command);
+                
+                    player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Success! " + ChatColor.RED + "" + target + "" + ChatColor.WHITE + "'s inventory will be cleared on his/her next login.");
+                
+                }
+            
+            }else{
+                
+                player.sendMessage("Chosen player is " + ChatColor.GREEN + "online" + ChatColor.WHITE + "! Use " + ChatColor.RED + "/ci <name> " + ChatColor.WHITE + "instead.");
+                
+            }
+            
+        }
+        
+        return true;
+        
+    }
+    
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event){
+        
+        Player player = event.getPlayer();
+        String strPlayer = player.getName();
+        
+        if(player.hasPermission("offlineci.marked")){
+            
+            ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
+            String command = "ci "+strPlayer;
+            Bukkit.dispatchCommand(console, command);
+            command = "lp user "+strPlayer+" permission unset offlineci.marked";
+            Bukkit.dispatchCommand(console, command);
+            
+        }
+        
+    }
+    
+}
