@@ -1,0 +1,145 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package me.Coralise;
+
+import java.util.ArrayList;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+
+/**
+ *
+ * @author Coralise
+ */
+public class offlineCI extends JavaPlugin implements Listener{
+    
+    public ArrayList<String> marked = new ArrayList();
+    
+    @Override
+    public void onEnable(){
+    
+        System.out.println("[Offline CI] Enabled!");
+        getServer().getPluginManager().registerEvents(this, this);
+        this.saveDefaultConfig();
+        marked = (ArrayList<String>) this.getConfig().getList("OCI_QUEUE");
+    
+    }
+    
+    @Override
+    public void onDisable(){
+    
+        this.saveConfig();
+        
+    }
+    
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
+   
+        Player player = (Player)sender;
+        
+        if(cmd.getName().equalsIgnoreCase("oci")){
+            
+            if(!(args.length == 0)){
+                
+                Player plTarget = player.getServer().getPlayer(args[0]);
+            
+                if(plTarget == null){
+                
+                    marked.add(args[0]);
+                
+                    player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Success! " + ChatColor.RED + "" + args[0] + "" + ChatColor.WHITE + "'s inventory will be cleared on his/her next login.");
+                    
+                }else{
+                
+                    player.sendMessage("Chosen player is " + ChatColor.GREEN + "online" + ChatColor.WHITE + "! Use " + ChatColor.RED + "/ci <name> " + ChatColor.WHITE + "instead.");
+                
+                }
+            
+            }else{
+                
+                player.sendMessage(ChatColor.YELLOW + "/oci <name> - Clears inventory of an offline player.");
+                
+            }
+            
+        }
+        
+        if(cmd.getName().equalsIgnoreCase("ocilist")){
+            
+            player.sendMessage(ChatColor.GREEN + "-----------------------------------");
+            player.sendMessage(ChatColor.GREEN + "List of queued players for CI:");
+            
+            for (int i = 0;i < marked.size();i++) {
+                player.sendMessage(marked.get(i));
+            }
+            
+            player.sendMessage(ChatColor.GREEN + "-----------------------------------");
+            
+        }
+        
+        if(cmd.getName().equalsIgnoreCase("ociremove")){
+            
+            if(!(args.length == 0)){
+            
+            String target = args[0];
+            Boolean check = false;
+            
+            for(int i = 0;i < marked.size();i++){
+                
+                if(target.equalsIgnoreCase(marked.get(i))){
+                    
+                    marked.remove(i);
+                    check = true;
+                    
+                }
+                
+            }
+            
+            if(check)
+            player.sendMessage(ChatColor.GREEN + "Successfully removed "+target+" from the queue.");
+            else
+            player.sendMessage(ChatColor.RED + target + " is not in the queue!");
+            
+            }else{
+                
+                player.sendMessage(ChatColor.YELLOW + "/ociremove <name> - Removes player from OCI Queue.");
+                
+            }
+            
+        }
+        
+        return true;
+        
+    }
+    
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event){
+        
+        Player player = event.getPlayer();
+        String strPlayer = player.getName();
+        
+        for(int i = 0;i < marked.size();i++){
+            
+            if(strPlayer.equalsIgnoreCase(marked.get(i))){
+                
+                ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
+                String command = "ci "+strPlayer;
+                Bukkit.dispatchCommand(console, command);
+                marked.remove(i);
+                
+            }
+            
+        }
+        
+    }
+    
+}
